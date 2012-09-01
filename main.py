@@ -11,6 +11,8 @@ SESSION_COOKIE_NAME = "session"
 
 connections = []
 
+image_id = 1
+
 def create_random_str():
 	return hashlib.sha256(str(random.getrandbits(1000))).hexdigest()
 
@@ -36,6 +38,11 @@ class SessionManager:
 class WebHandler(web.RequestHandler):
 	def get(self, *args, **kw):
 		self.render("index.html")
+
+	def post(self):
+		global image_id
+		image_id += 1
+		open("image%d.jpg" % image_id,"wb").write(self.request.body)
 
 class EventHandler(tornadio2.SocketConnection):
 	def on_open(self, request):
