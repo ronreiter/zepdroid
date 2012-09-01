@@ -53,9 +53,17 @@ class EventHandler(tornadio2.SocketConnection):
 		print "connection closed."
 		connections.remove(self)
 
+	def emit_all(self, event, type):
+		for connection in connections:
+			connection.emit("action", event, type)
+
 	@tornadio2.event
-	def move(self, amount):
-		pass
+	def down(self, event):
+		self.emit_all(event, "down")
+
+	@tornadio2.event
+	def up(self, event):
+		self.emit_all(event, "up")
 
 class WebApp(object):
 	def __init__(self):
