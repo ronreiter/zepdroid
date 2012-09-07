@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="10dp">
+
+    <ToggleButton
+            android:id="@+id/btn_power"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:textOn="Power"
+            android:textOff="Power"
+            android:onClick="onPowerClicked"/>
+
+    <ToggleButton
+            android:id="@+id/btn_motor_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btn_power"
+            android:layout_marginBottom="10dp"
+            android:textOn="Motor 1"
+            android:textOff="Motor 1"
+            android:onClick="onMotor1Clicked"/>
+
+    <ToggleButton
+            android:id="@+id/btn_motor_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btn_motor_1"
+            android:layout_marginBottom="10dp"
+            android:textOn="Motor 2"
+            android:textOff="Motor 2"
+            android:onClick="onMotor2Clicked"/>
+
+    <EditText
+            android:id="@+id/txt_angle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/btn_send_angle"
+            android:layout_below="@id/btn_motor_2"
+            android:layout_marginBottom="10dp"/>
+
+    <Button
+            android:id="@+id/btn_send_angle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/txt_angle"
+            android:layout_alignBottom="@id/txt_angle"
+            android:layout_below="@id/btn_motor_2"
+            android:layout_alignParentRight="true"
+            android:inputType="number"
+            android:text="Send"
+            android:textSize="14sp"/>
+
+    <Button
+            android:id="@+id/btn_reset_angle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btn_send_angle"
+            android:text="Reset Angle"/>
+
+    <ProgressBar
+            android:id="@+id/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@android:style/Widget.ProgressBar.Small"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:visibility="gone"/>
+
+    <TextView
+            android:id="@+id/ack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"/>
+</RelativeLayout>
+
