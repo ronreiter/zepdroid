@@ -41,9 +41,13 @@ class WebHandler(web.RequestHandler):
 
 	def post(self):
 		global image_id
+		print len(self.request.body)
+		open("static/image%d.jpg" % image_id,"wb").write(self.request.body)
+		for connection in connections:
+			print "disp_img %s" % connection
+			connection.emit("disp_img", "static/image%d.jpg" % image_id)
 		image_id += 1
-		open("image%d.jpg" % image_id,"wb").write(self.request.body)
-
+		
 class EventHandler(tornadio2.SocketConnection):
 	def on_open(self, request):
 		print "client connected."
@@ -55,15 +59,24 @@ class EventHandler(tornadio2.SocketConnection):
 
 	def emit_all(self, event, type):
 		for connection in connections:
+			print "connection: %s" % connection
 			connection.emit("action", event, type)
-
+	
 	@tornadio2.event
 	def down(self, event):
+		print "down: %s" % event
 		self.emit_all(event, "down")
 
 	@tornadio2.event
 	def up(self, event):
+		print "up: %s" % event
 		self.emit_all(event, "up")
+	'''
+	@tornadio2.event	
+	def test(self, resp1, resp2):
+		print resp1
+		print resp2
+	'''
 
 class WebApp(object):
 	def __init__(self):
