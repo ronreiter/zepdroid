@@ -43,6 +43,9 @@
 						event = 'ngn2stop';
 						$(this).text('W');
 					}
+				} else if (event === 'picture'){
+					$('#picture span').hide();
+					$('#picture img').show();
 				}
 				console.log(event + ' up');
 				socket.emit("up", event);
@@ -51,7 +54,16 @@
 			socket.on('disp_img', function (data) {
 				console.log('response: ' + data);
 				$('#camera').attr('src',data);
+				$('#picture img').hide();
+				$('#picture span').show();
 			});
+			
+			socket.on('keep_alive', function (data) {
+				console.log('keep alive: ' + data);
+				var curT = new Date();
+				$('#keepAlive span').text(curT.getHours()+':'+curT.getMinutes()+':'+curT.getSeconds());
+			});
+			
 		});
 	</script>
 	<link href="static/style.css" rel="stylesheet" />
@@ -76,13 +88,16 @@
 		<div id="back" class="button float-button">é</div>
 		<div id="center" class="button float-button fadedBtn">~</div>
 		<div id="ngn1" class="button float-button">W</div>
-		<div id="picture" class="button float-button">D</div>
+		<div id="picture" class="button float-button">
+			<span>D</span>
+			<img src="static/ajax-loader.gif"></img>
+		</div>
 		<div id="ngn2" class="button float-button">W</div>
 	</div>
 	<div class="control-box">
 		<h1 style="margin: 0;"><i>D</i>Camera</h1>
 		<img id="camera" />
 	</div>
-
+	<div id="keepAlive">Last connection: <span></span></div>
 </body>
 </html>

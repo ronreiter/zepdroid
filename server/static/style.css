@@ -44,9 +44,9 @@ header {
 	text-align: center;
 	cursor: pointer;
 }
-.button:hover {
+/*.button:hover {
 	background: #94b629;
-}
+}*/
 .float-button {
 	float: left;
 	width: 80px;
@@ -66,4 +66,13 @@ header {
 	height:47px;
 	float:left;
 	margin-top:20px;
+}
+#keepAlive{
+	font-size:10px;
+	font-color:#999;
+	text-align: center;
+}
+#picture img{
+	display:none;
+	margin-bottom: 12px;
 }
