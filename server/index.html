@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html>
 <head>
@@ -86,3 +87,93 @@
 
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ZepDroid</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<script src="static/socket.io.js"></script>
+	<script src="static/jquery-1.8.1.min.js"></script>
+	<link rel="stylesheet" href="static/entypo/entypo.css"/>
+	<script>
+		var MAX_SPEED=255;
+		var MIN_SPEED=0;
+		var SPEED_JUMP = 25;
+		var SPEED = 200;
+		$(function() {
+			var socket = io.connect("/");
+			$(".button").mousedown(function() {
+				var event = $(this).attr("id");
+				console.log(event + ' down');
+				socket.emit("down", event);
+
+			}).mouseup(function() {
+				var event = $(this).attr("id");
+				if (event === 'slower'){
+					SPEED = Math.max(MIN_SPEED,SPEED-SPEED_JUMP);
+					event = 'speed: '+SPEED;
+				} else if (event === 'faster'){
+					SPEED = Math.min(MAX_SPEED,SPEED+SPEED_JUMP);
+					event = 'speed: '+SPEED;
+				} else if (event === 'ngn1'){
+					if ($(this).text() === 'W'){
+						event = 'ngn1start';
+						$(this).text('X');
+					} else {
+						event = 'ngn1stop';
+						$(this).text('W');
+					}
+				} else if (event === 'ngn2'){
+					if ($(this).text() === 'W'){
+						event = 'ngn2start';
+						$(this).text('X');
+					} else {
+						event = 'ngn2stop';
+						$(this).text('W');
+					}
+				}
+				console.log(event + ' up');
+				socket.emit("up", event);
+			});
+			
+			socket.on('disp_img', function (data) {
+				console.log('response: ' + data);
+				$('#camera').attr('src',data);
+			});
+		});
+	</script>
+	<link href="static/style.css" rel="stylesheet" />
+</head>
+<body>
+<!--header>
+	<div class="container">
+		<h1 class="title"><img src="static/zepdroid.png" class="icon"/></h1>
+
+	<!--/div>
+</header-->
+
+	<div class="control-box">
+		<div id="elevate_up" class="button float-button fadedBtn">v</div>
+		<div id="forward" class="button float-button">è</div>
+		<div id="elevate_down" class="button float-button fadedBtn">w</div>
+		<div id="left" class="button float-button">ç</div>
+		<!--div class="float-button"></div-->
+		<img src="static/zepdroid.png" id="zepdroidIcon"/>
+		<div id="right" class="button float-button">ê</div>
+		<div id="faster" class="button float-button fadedBtn">]</div>
+		<div id="back" class="button float-button">é</div>
+		<div id="slower" class="button float-button fadedBtn">\</div>
+		<div id="ngn1" class="button float-button">W</div>
+		<div id="picture" class="button float-button">D</div>
+		<div id="ngn2" class="button float-button">W</div>
+	</div>
+	<div class="control-box">
+		<h1 style="margin: 0;"><i>D</i>Camera</h1>
+		<img id="camera" />
+	</div>
+
+</body>
+</html>
+>>>>>>> master
