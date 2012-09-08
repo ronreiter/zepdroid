@@ -26,12 +26,9 @@ header {
 	padding: 10px;
 }
 .control-box {
-	/*float: left;
-	margin-top: 20px;
-	margin-right: 15px;*/
 	margin:20px auto;
 	width:300px;
-	height: 400px;
+	height: 390px;
 	background: #eeeeee;
 	position: relative;
 	padding: 15px;
@@ -60,4 +57,13 @@ header {
 	width: 100%;
 	height: 300px;
 	background: white;
+}
+.fadedBtn{
+	opacity:0.5;
+}
+#zepdroidIcon{
+	width:90px;
+	height:47px;
+	float:left;
+	margin-top:20px;
 }
