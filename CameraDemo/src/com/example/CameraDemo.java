@@ -60,7 +60,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
         @Override
         protected Long doInBackground(byte[]... params) {
 
-            String url = "http://zepdroid.com:8099";
+            String url = "192.168.2.101:8099";
 
             Log.d(TAG, " params[0] wrote bytes: " + params[0].length);
 
@@ -125,7 +125,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 
 
         try {
-            socket = new SocketIO("http://zepdroid.com:8099/");
+            socket = new SocketIO("192.168.2.101:8099");
 
 
         } catch (Exception e1) {
@@ -180,7 +180,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                 if (args[0].equals("ngn1stop") && args[1].equals("up")) {
                     Log.d(TAG, "ng1Stop up");
                     sendCommand(
-                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.COMMAND_MOTOR_2,
                             ADKManager.ACTION_POWER_OFF,
                             null);
 
@@ -194,7 +194,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                 if (args[0].equals("ngn2stop") && args[1].equals("up")) {
                     Log.d(TAG, "ng2Stop up");
                     sendCommand(
-                            ADKManager.COMMAND_MOTOR_2,
+                            ADKManager.COMMAND_MOTOR_1,
                             ADKManager.ACTION_POWER_OFF,
                             null);
                 }
@@ -224,7 +224,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                     socket.emit("test", resp);
                     byte speed = (byte) 255;
                     sendCommand(
-                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.COMMAND_MOTOR_2,
                             ADKManager.ACTION_POWER_ON,
                             new byte[]{ADKManager.DIRECTION_LEFT, (byte) speed});
                 }
@@ -263,7 +263,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                     Log.d(TAG, "up: back");
                     byte speed = (byte) 255;
                     sendCommand(
-                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.COMMAND_MOTOR_2,
                             ADKManager.ACTION_POWER_ON,
                             new byte[]{ADKManager.DIRECTION_RIGHT, (byte) speed});
                 }
@@ -275,7 +275,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                     Log.d(TAG, "up: elevate_up");
                     byte speed = (byte) 255;
                     sendCommand(
-                            ADKManager.COMMAND_MOTOR_2,
+                            ADKManager.COMMAND_MOTOR_1,
                             ADKManager.ACTION_POWER_ON,
                             new byte[]{ADKManager.DIRECTION_LEFT, (byte) speed});
                 }
@@ -287,7 +287,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                     Log.d(TAG, "up: elevate_down");
                     byte speed = (byte) 255;
                     sendCommand(
-                            ADKManager.COMMAND_MOTOR_2,
+                            ADKManager.COMMAND_MOTOR_1,
                             ADKManager.ACTION_POWER_ON,
                             new byte[]{ADKManager.DIRECTION_RIGHT, (byte) speed});
                 }
