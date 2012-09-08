@@ -11,8 +11,7 @@ import android.graphics.Paint;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.*;
 
 
 class Preview extends SurfaceView implements SurfaceHolder.Callback {
@@ -20,7 +19,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 
     SurfaceHolder mHolder;
     public Camera camera;
-    
+
     Preview(Context context) {
         super(context);
         
@@ -36,10 +35,16 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
         // to draw.
         camera = Camera.open();
         try {
-			camera.setPreviewDisplay(holder);
-			
-			
-			camera.setPreviewCallback(new PreviewCallback() {
+            Camera.Parameters parameters = camera.getParameters();
+            parameters.setRotation(90);
+            camera.setParameters(parameters);
+
+            camera.setDisplayOrientation(90);
+            camera.setPreviewDisplay(holder);
+
+
+
+            camera.setPreviewCallback(new PreviewCallback() {
 
 				public void onPreviewFrame(byte[] data, Camera arg1) {
 					FileOutputStream outStream = null;
@@ -77,6 +82,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
        // parameters.setPreviewSize(w, h);
         camera.setParameters(parameters);
         camera.startPreview();
+
     }
 
     @Override
@@ -86,4 +92,5 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
     		Log.d(TAG,"draw");
     		canvas.drawText("PREVIEW", canvas.getWidth()/2, canvas.getHeight()/2, p );
     }
+
 }

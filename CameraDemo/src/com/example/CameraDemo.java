@@ -58,7 +58,7 @@ public class CameraDemo extends Activity {
 		@Override
 		protected Long doInBackground(byte[]... params) {
 			
-			String url = "http://192.168.43.97:8099";
+			String url = "http://zepdroid.com:8099";
 			
 			Log.d(TAG, " params[0] wrote bytes: " + params[0].length);
 			
@@ -126,7 +126,7 @@ public class CameraDemo extends Activity {
 		
 		
 		try {
-			socket = new SocketIO("http://192.168.43.97:8099/");
+			socket = new SocketIO("http://zepdroid.com:8099/");
 			
 			
 		} catch (Exception e1) {
@@ -218,7 +218,7 @@ public class CameraDemo extends Activity {
 				if(args[0].equals("picture") && args[1].equals("up")){
 					Log.d(TAG, "up: picture");
 					
-					preview.camera.takePicture(shutterCallback, rawCallback, jpegCallback);
+					preview.camera.takePicture(shutterCallback, rawCallback, null, jpegCallback);
 					
 					//Object[] resp = {"hello"};
 					//socket.emit("get_img", resp);
