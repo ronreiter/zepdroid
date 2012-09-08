@@ -78,4 +78,6 @@ header {
 }
 #power_on{
 	background:none;
+	margin-left: 0;
+	margin-right: 10px;
 }
