@@ -60,7 +60,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
         @Override
         protected Long doInBackground(byte[]... params) {
 
-            String url = "192.168.2.101:8099";
+            String url = "http://192.168.2.101:8099";
 
             Log.d(TAG, " params[0] wrote bytes: " + params[0].length);
 
@@ -125,7 +125,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 
 
         try {
-            socket = new SocketIO("192.168.2.101:8099");
+            socket = new SocketIO("http://192.168.2.101:8099");
 
 
         } catch (Exception e1) {
@@ -174,7 +174,10 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 
                 if (args[0].equals("ngn1start") && args[1].equals("up")) {
                     Log.d(TAG, "ng1Start up");
-
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_2,
+                            ADKManager.ACTION_POWER_ON,
+                            null);
                 }
 
                 if (args[0].equals("ngn1stop") && args[1].equals("up")) {
@@ -188,7 +191,10 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 
                 if (args[0].equals("ngn2start") && args[1].equals("up")) {
                     Log.d(TAG, "ng2Start up");
-
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.ACTION_POWER_ON,
+                            null);
                 }
 
                 if (args[0].equals("ngn2stop") && args[1].equals("up")) {
@@ -201,6 +207,10 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 
                 if (args[0].equals("center") && args[1].equals("up")) {
                     Log.d(TAG, "center up");
+                    sendCommand(
+                            ADKManager.COMMAND_ROTATE,
+                            ADKManager.ACTION_RESET_ROTATION,
+                            null);
 
                 }
 
@@ -220,16 +230,19 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 
                 if (args[0].equals("forward") && args[1].equals("up")) {
                     Log.d(TAG, "up: forward");
-                    Object[] resp = {"hello", "world"};
-                    socket.emit("test", resp);
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_2,
+                            ADKManager.ACTION_POWER_OFF,
+                            null);
+                }
+                if (args[0].equals("forward") && args[1].equals("down")) {
+                    Log.d(TAG, "down: forward");
                     byte speed = (byte) 255;
                     sendCommand(
                             ADKManager.COMMAND_MOTOR_2,
                             ADKManager.ACTION_POWER_ON,
-                            new byte[]{ADKManager.DIRECTION_LEFT, (byte) speed});
-                }
-                if (args[0].equals("forward") && args[1].equals("down")) {
-                    Log.d(TAG, "down: forward");
+                            new byte[]{ADKManager.DIRECTION_LEFT, speed});
+
                 }
                 if (args[0].equals("left") && args[1].equals("up")) {
                     Log.d(TAG, "up: left");
@@ -261,14 +274,18 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                 }
                 if (args[0].equals("back") && args[1].equals("up")) {
                     Log.d(TAG, "up: back");
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_2,
+                            ADKManager.ACTION_POWER_OFF,
+                            null);
+                }
+                if (args[0].equals("back") && args[1].equals("down")) {
+                    Log.d(TAG, "down: back");
                     byte speed = (byte) 255;
                     sendCommand(
                             ADKManager.COMMAND_MOTOR_2,
                             ADKManager.ACTION_POWER_ON,
                             new byte[]{ADKManager.DIRECTION_RIGHT, (byte) speed});
-                }
-                if (args[0].equals("back") && args[1].equals("down")) {
-                    Log.d(TAG, "down: back");
                 }
 
                 if (args[0].equals("elevate_up") && args[1].equals("up")) {
@@ -276,23 +293,32 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                     byte speed = (byte) 255;
                     sendCommand(
                             ADKManager.COMMAND_MOTOR_1,
-                            ADKManager.ACTION_POWER_ON,
-                            new byte[]{ADKManager.DIRECTION_LEFT, (byte) speed});
+                            ADKManager.ACTION_POWER_OFF,
+                            null);
                 }
                 if (args[0].equals("elevate_up") && args[1].equals("down")) {
                     Log.d(TAG, "down: elevate_up");
+                    byte speed = (byte) 255;
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.ACTION_POWER_ON,
+                            new byte[]{ADKManager.DIRECTION_LEFT, (byte) speed});
                 }
 
                 if (args[0].equals("elevate_down") && args[1].equals("up")) {
                     Log.d(TAG, "up: elevate_down");
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.ACTION_POWER_OFF,
+                            null);
+                }
+                if (args[0].equals("elevate_down") && args[1].equals("down")) {
+                    Log.d(TAG, "down: elevate_down");
                     byte speed = (byte) 255;
                     sendCommand(
                             ADKManager.COMMAND_MOTOR_1,
                             ADKManager.ACTION_POWER_ON,
                             new byte[]{ADKManager.DIRECTION_RIGHT, (byte) speed});
-                }
-                if (args[0].equals("elevate_down") && args[1].equals("down")) {
-                    Log.d(TAG, "down: elevate_down");
                 }
 
                 if (args[0].equals("music") && args[1].equals("up")) {
