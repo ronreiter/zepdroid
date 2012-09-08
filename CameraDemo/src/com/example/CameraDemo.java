@@ -1,5 +1,8 @@
 package com.example;
 
+import android.content.res.AssetFileDescriptor;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import io.socket.IOAcknowledge;
 import io.socket.IOCallback;
 import io.socket.SocketIO;
@@ -41,6 +44,7 @@ public class CameraDemo extends Activity {
 	Preview preview;
 	Button buttonClick;
 	SocketIO socket = null;
+    MediaPlayer player = null;
 	
 
 	/** Called when the activity is first created. */
@@ -214,6 +218,21 @@ public class CameraDemo extends Activity {
 				if(args[0].equals("elevate_down") && args[1].equals("down")){
 					Log.d(TAG, "down: elevate_down");
 				}
+
+                if(args[0].equals("music") && args[1].equals("up")){
+                    Log.d(TAG, "up: music");
+                }
+                if(args[0].equals("music") && args[1].equals("down")){
+                    Log.d(TAG, "down: music");
+                    // toggle playing
+                    if (CameraDemo.this.player.isPlaying()) {
+                        CameraDemo.this.player.stop();
+
+                    } else {
+                        CameraDemo.this.player.start();
+
+                    }
+                }
 				
 				if(args[0].equals("picture") && args[1].equals("up")){
 					Log.d(TAG, "up: picture");
@@ -225,8 +244,6 @@ public class CameraDemo extends Activity {
 				}
 				
 				if(args[0].equals("picture") && args[1].equals("down")){
-					
-					
 					Log.d(TAG, "down: picture");
 				}
 				
@@ -237,19 +254,41 @@ public class CameraDemo extends Activity {
 			@Override
 			public void onError(SocketIOException socketIOException) {
 				Log.d(TAG, "onError");
-				// TODO Auto-generated method stub
-				
-			}
-        	});
+			    }
+        	}
+        );
 			
-        //socket.send("Hello Server!");
-		
-		/*buttonClick = (Button) findViewById(R.id.buttonClick);
+        try {
+            player = new MediaPlayer();
+            AssetFileDescriptor afd = CameraDemo.this.getResources().openRawResourceFd(R.raw.wholelottalove);
+            player.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+            afd.close();
+            player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            player.setLooping(false);
+            player.prepare();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        buttonClick = (Button) findViewById(R.id.buttonClick);
 		buttonClick.setOnClickListener( new OnClickListener() {
 			public void onClick(View v) {
-				preview.camera.takePicture(shutterCallback, rawCallback, jpegCallback);
-			}
-		});*/
+				//preview.camera.takePicture(shutterCallback, rawCallback, jpegCallback);
+                //AudioManager audioManager = (AudioManager) getSystemService(CameraDemo.AUDIO_SERVICE);
+                //audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 20, 0);
+
+                // toggle playing
+                if (CameraDemo.this.player.isPlaying()) {
+                    CameraDemo.this.player.stop();
+
+                } else {
+                    CameraDemo.this.player.start();
+
+                }
+
+            }
+		});
 
 		Log.d(TAG, "onCreate'd");
 	}
