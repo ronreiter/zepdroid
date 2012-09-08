@@ -207,14 +207,14 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                 if (args[0].equals("power_on") && args[1].equals("up")) {
                     Log.d(TAG, "power on");
                     sendCommand(ADKManager.COMMAND_STAND_BY,
-                            ADKManager.ACTION_POWER_ON,
+                            ADKManager.ON,
                             null);
                 }
 
                 if (args[0].equals("power_off") && args[1].equals("up")) {
                     Log.d(TAG, "power off");
                     sendCommand(ADKManager.COMMAND_STAND_BY,
-                            ADKManager.ACTION_POWER_OFF,
+                            ADKManager.OFF,
                             null);
                 }
 

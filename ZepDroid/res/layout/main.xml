@@ -58,7 +58,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/btn_send_angle"
+            android:layout_marginBottom="10dp"
             android:text="Reset Angle"/>
+
+    <Button
+            android:id="@+id/btn_rotate_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btn_reset_angle"
+            android:layout_alignParentLeft="true"
+            android:layout_marginBottom="10dp"
+            android:text="Rotate Left"/>
+
+    <Button
+            android:id="@+id/btn_rotate_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btn_reset_angle"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="10dp"
+            android:text="Rotate Right"/>
+
+    <Button
+            android:id="@+id/btn_stop_rotation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btn_rotate_left"
+            android:text="Stop Rotation"/>
 
     <ProgressBar
             android:id="@+id/progress"
