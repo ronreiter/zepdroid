@@ -71,12 +71,6 @@ class EventHandler(tornadio2.SocketConnection):
 	def up(self, event):
 		print "up: %s" % event
 		self.emit_all(event, "up")
-	'''
-	@tornadio2.event	
-	def test(self, resp1, resp2):
-		print resp1
-		print resp2
-	'''
 
 class WebApp(object):
 	def __init__(self):
