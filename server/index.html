@@ -12,14 +12,21 @@
 		var MIN_SPEED=0;
 		var SPEED_JUMP = 25;
 		var SPEED = 200;
+
+
+
 		$(function() {
 			var socket = io.connect("/");
-			$(".button").mousedown(function() {
+
+			function down() {
 				var event = $(this).attr("id");
 				console.log(event + ' down');
 				socket.emit("down", event);
+                $(this).addClass("pressed");
+			}
 
-			}).mouseup(function() {
+			function up() {
+                $(this).removeClass("pressed");
 				var event = $(this).attr("id");
 				if (event === 'slower'){
 					SPEED = Math.max(MIN_SPEED,SPEED-SPEED_JUMP);
@@ -49,13 +56,21 @@
 				}
 				console.log(event + ' up');
 				socket.emit("up", event);
-			});
+			}
+
+			$(".button")
+					.bind("mousedown", down)
+					.bind("mouseup", up)
+					.bind("touchstart", down)
+					.bind("touchend", up)
+					.bind("touchcancel", up);
 			
 			socket.on('disp_img', function (data) {
 				console.log('response: ' + data);
 				$('#camera').attr('src',data);
 				$('#picture img').hide();
 				$('#picture span').show();
+				console.log("got image");
 			});
 			
 			socket.on('keep_alive', function (data) {
@@ -77,9 +92,9 @@
 </header-->
 
 	<div class="control-box">
-		<div id="elevate_up" class="button float-button fadedBtn">v</div>
+		<div id="elevate_up" class="button float-button">v</div>
 		<div id="forward" class="button float-button">è</div>
-		<div id="elevate_down" class="button float-button fadedBtn">w</div>
+		<div id="elevate_down" class="button float-button">w</div>
 		<div id="left" class="button float-button">ç</div>
 		<!--div class="float-button"></div-->
 		<div id="power_on" class="button float-button"><img src="static/zepdroid.png" id="zepdroidIcon"/></div>
@@ -87,12 +102,12 @@
 		<div id="music" class="button float-button fadedBtn">H</div>
 		<div id="back" class="button float-button">é</div>
 		<div id="center" class="button float-button fadedBtn">~</div>
-		<div id="ngn1" class="button float-button">W</div>
-		<div id="picture" class="button float-button">
+		<div id="ngn1" class="button float-button fadedBtn">W</div>
+		<div id="picture" class="button float-button fadedBtn">
 			<span>D</span>
 			<img src="static/ajax-loader.gif"></img>
 		</div>
-		<div id="ngn2" class="button float-button">W</div>
+		<div id="ngn2" class="button float-button fadedBtn">W</div>
 	</div>
 	<div class="control-box">
 		<h1 style="margin: 0;"><i>D</i>Camera</h1>

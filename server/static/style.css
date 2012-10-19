@@ -2,7 +2,12 @@ body {
 	font-family: Arial;
 	margin: 0;
 	color: #444444;
-
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 .container {
 	width: 960px;
@@ -33,6 +38,12 @@ header {
 	position: relative;
 	padding: 15px;
 	box-sizing: border-box;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 .button {
 	font-family: EntypoRegular;
@@ -43,6 +54,12 @@ header {
 	color: white;
 	text-align: center;
 	cursor: pointer;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 /*.button:hover {
 	background: #94b629;
@@ -80,4 +97,8 @@ header {
 	background:none;
 	margin-left: 0;
 	margin-right: 10px;
+}
+
+.pressed {
+	background: black;
 }

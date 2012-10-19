@@ -36,16 +36,17 @@ class SessionManager:
 		return cls.sessions.get(session_id)
 
 
-class WebHandler(web.RequestHandler):
-	def get(self, *args, **kw):
-		self.render("index.html")
-
-		
 class KeepAliveHandler(web.RequestHandler):
-	def get(self, *args, **kw): 
-		print "keepAlive"
+	def get(self, *args, **kw):
 		for connection in connections:
 			connection.emit("keep_alive", "keep_alive")
+
+		print "keepAlive"
+		self.render("index.html")
+		
+class WebHandler(web.RequestHandler):
+	def get(self, *args, **kw): 
+		self.render("index.html")
 
 	def post(self):
 		global image_id
