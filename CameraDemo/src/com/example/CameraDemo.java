@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 import io.socket.IOAcknowledge;
 import io.socket.IOCallback;
 import io.socket.SocketIO;
@@ -21,19 +22,22 @@ import io.socket.SocketIOException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONObject;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Timer;
 import java.util.TimerTask;
 
 public class CameraDemo extends Activity implements ADKManager.Callback {
-	private static final String TAG = "CameraDemo";
+	private static final String TAG = "ZepDroid";
+    private static final String BASE_URI = "http://zepdroid.com:8099";
+    //private static final String BASE_URI = "http://192.168.2.101:8099";
 
     ADKManager mADKManager;
 	Camera camera;
@@ -41,6 +45,9 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 	Button buttonClick;
 	SocketIO socket = null;
     MediaPlayer player = null;
+
+    int period = 10 * 1000;  // repeat every sec.
+    Timer timer = new Timer();
 	
 
 	/** Called when the activity is first created. */
@@ -58,7 +65,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 		@Override
 		protected Long doInBackground(byte[]... params) {
 			
-			String url = "http://zepdroid.com:8099";
+			String url = BASE_URI;
 			
 			Log.d(TAG, " params[0] wrote bytes: " + params[0].length);
 			
@@ -99,20 +106,13 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			
-		    
-			
+
 			Log.d(TAG, "Async op");
 			return null;
 		}
 
-	
-
-	    
 	 }
-	
-	
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -124,60 +124,84 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 		
 		//Timer getPic = new Timer();
 		//getPic.schedule(new TakePicTask(), 1000*3);
-		
-		
+
 		try {
-			socket = new SocketIO("http://zepdroid.com:8099/");
-			
-			
+			socket = new SocketIO(BASE_URI);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
         socket.connect(new IOCallback() {
-   
+            public void onConnect() {
+                System.out.println("Connection established");
 
+                timer.scheduleAtFixedRate(new TimerTask() {
+                    public void run() {
+
+                        System.out.println("HTTP GET");
+
+                        BufferedReader in = null;
+                        try {
+                            HttpClient client = new DefaultHttpClient();
+                            HttpGet request = new HttpGet();
+                            request.setURI(new URI(BASE_URI + "/keepalive"));
+                            client.execute(request);
+
+                            /*in = new BufferedReader
+                                    (new InputStreamReader(response.getEntity().getContent()));
+                            StringBuffer sb = new StringBuffer("");
+                            String line = "";
+                            String NL = System.getProperty("line.separator");
+                            while ((line = in.readLine()) != null) {
+                                sb.append(line + NL);
+                            }
+                            in.close();
+                            String page = sb.toString();
+                            System.out.println(page);   */
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (URISyntaxException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, 0, period);
+            }
 
             @Override
             public void onDisconnect() {
                 System.out.println("Connection terminated.");
             }
 
-            @Override
-            public void onConnect() {
-                System.out.println("Connection established");
-            }
-
-
 			@Override
 			public void onMessage(String data, IOAcknowledge ack) {
-				// TODO Auto-generated method stub
-				
-				
 				Log.d(TAG, "onMessage");
-				
-				
 			}
-			
 
 			@Override
 			public void onMessage(JSONObject json, IOAcknowledge ack) {
-				
-				// TODO Auto-generated method stub
 				Log.d(TAG, "onMessagejson");
-				
 			}
 
 			@Override
-			public void on(String event, IOAcknowledge ack, Object... args) {
-				Log.d(TAG, "on");
-				// TODO Auto-generated method stub
-				
-				Log.d(TAG, event);
+			public void on(String event, IOAcknowledge ack, final Object... args) {
+				Log.d(TAG, "on " + args[0]);
+
+                if (args[0].equals("keep_alive")) {
+                    Log.d(TAG, "got back keep alive from socket");
+                    return;
+                }
+
+                //Caused by: java.lang.RuntimeException: Can't create handler inside thread that has not called Looper.prepare()
+                //Toast.makeText(CameraDemo.this, args[0].toString(), Toast.LENGTH_LONG).show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(CameraDemo.this, args[0].toString(), Toast.LENGTH_SHORT).show();
+                    }
+                });
 
                 if (args[0].equals("ngn1start") && args[1].equals("up")) {
                     Log.d(TAG, "ng1Start up");
-
                 }
 
                 if (args[0].equals("ngn1stop") && args[1].equals("up")) {
@@ -186,12 +210,10 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                             ADKManager.COMMAND_MOTOR_1,
                             ADKManager.ACTION_POWER_OFF,
                             null);
-
                 }
 
                 if (args[0].equals("ngn2start") && args[1].equals("up")) {
                     Log.d(TAG, "ng2Start up");
-
                 }
 
                 if (args[0].equals("ngn2stop") && args[1].equals("up")) {
@@ -204,15 +226,13 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 
                 if (args[0].equals("center") && args[1].equals("up")) {
                     Log.d(TAG, "center up");
-
                 }
 
                 if (args[0].equals("connect") && args[1].equals("up")) {
                     Log.d(TAG, "connect up");
-
                 }
 				
-				if(args[0].equals("forward") && args[1].equals("up")){
+				if(args[0].equals("forward") && args[1].equals("up")) {
 					Log.d(TAG, "up: forward");
 					Object[] resp = {"hello", "world"};
 					socket.emit("test", resp);
@@ -222,6 +242,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                             ADKManager.ACTION_POWER_ON,
                             new byte[]{ADKManager.DIRECTION_LEFT, (byte) speed});
 				}
+
 				if(args[0].equals("forward") && args[1].equals("down")){
 					Log.d(TAG, "down: forward");
 				}
@@ -322,10 +343,10 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 
 			@Override
 			public void onError(SocketIOException socketIOException) {
-				Log.d(TAG, "onError");
-			    }
-        	}
-        );
+				Log.e(TAG, "onError", socketIOException);
+
+			}
+        });
 			
         try {
             player = new MediaPlayer();

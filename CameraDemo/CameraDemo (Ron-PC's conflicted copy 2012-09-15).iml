@@ -27,7 +27,6 @@
           <path>/res-overlay</path>
         </resOverlayFolders>
         <includeSystemProguardFile>true</includeSystemProguardFile>
-        <additionalNativeLibs />
       </configuration>
     </facet>
   </component>

@@ -15,7 +15,7 @@ import android.view.*;
 
 
 class Preview extends SurfaceView implements SurfaceHolder.Callback {
-	private static final String TAG = "Preview";
+	private static final String TAG = "ZepDroid";
 
     SurfaceHolder mHolder;
     public Camera camera;
