@@ -70,6 +70,7 @@ public class ADKManager implements Runnable {
     private Callback mCallback;
 
     private boolean mConnecting = false;
+    private boolean mConnected = false;
     private Timer mTimer;
 
     ///////////////////////////////////////////////
@@ -292,8 +293,14 @@ public class ADKManager implements Runnable {
                     }
                 }
             } else if (UsbManager.ACTION_USB_ACCESSORY_ATTACHED.equals(action)) {
-                Log.d(TAG, "Attached");
-                mConnecting = false;
+                UsbAccessory accessory = (UsbAccessory) intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
+
+                if (accessory != null && accessory.equals(mAccessory)) {
+                    Log.d(TAG, "Attached");
+                    mConnecting = false;
+                    mConnected = true;
+
+                }
 
 
             } else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
@@ -304,6 +311,9 @@ public class ADKManager implements Runnable {
                     Log.d(TAG, "Detached");
                     closeAccessory();
 
+                    if (mConnected) {
+                        // we're
+                    }
                 }
             }
         }

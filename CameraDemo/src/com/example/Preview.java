@@ -22,7 +22,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 
     Preview(Context context) {
         super(context);
-        
+
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
         mHolder = getHolder();
