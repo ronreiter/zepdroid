@@ -32,6 +32,10 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Timer;
+import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.TimerTask;
 
 public class CameraDemo extends Activity implements ADKManager.Callback {
@@ -42,15 +46,13 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
     ADKManager mADKManager;
 	Preview preview;
 	Button buttonClick;
-	SocketIO socket = null;
+    SocketIO socket = null;
     MediaPlayer player = null;
 
     int period = 10 * 1000;  // repeat every sec.
     Timer timer = new Timer();
-	
 
 	/** Called when the activity is first created. */
-	
 	class TakePicTask extends TimerTask{
 		
 		public void run(){
@@ -64,7 +66,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 		@Override
 		protected Long doInBackground(byte[]... params) {
 			
-			String url = BASE_URI;
+			String url = "http://zepdroid.com:8099";
 			
 			Log.d(TAG, " params[0] wrote bytes: " + params[0].length);
 			
@@ -105,13 +107,20 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
+			
+		    
+			
 			Log.d(TAG, "Async op");
 			return null;
 		}
 
-	 }
+	
 
+	    
+	 }
+	
+	
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -131,6 +140,12 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 			e1.printStackTrace();
 		}
         socket.connect(new IOCallback() {
+   
+            @Override
+            public void onDisconnect() {
+                System.out.println("Connection terminated.");
+            }
+
             public void onConnect() {
                 System.out.println("Connection established");
 
@@ -166,150 +181,184 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                 }, 0, period);
             }
 
-            @Override
-            public void onDisconnect() {
-                System.out.println("Connection terminated.");
-            }
 
 			@Override
 			public void onMessage(String data, IOAcknowledge ack) {
+				// TODO Auto-generated method stub
+				
+				
 				Log.d(TAG, "onMessage");
+				
+				
 			}
+			
 
 			@Override
 			public void onMessage(JSONObject json, IOAcknowledge ack) {
+				
+				// TODO Auto-generated method stub
 				Log.d(TAG, "onMessagejson");
+				
 			}
 
 			@Override
-			public void on(String event, IOAcknowledge ack, final Object... args) {
-				Log.d(TAG, "on " + args[0]);
-
+			public void on(String event, IOAcknowledge ack, Object... args) {
+                Log.d(TAG, "on " + args[0]);
                 if (args[0].equals("keep_alive")) {
                     Log.d(TAG, "got back keep alive from socket");
                     return;
                 }
 
-                //Caused by: java.lang.RuntimeException: Can't create handler inside thread that has not called Looper.prepare()
-                //Toast.makeText(CameraDemo.this, args[0].toString(), Toast.LENGTH_LONG).show();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(CameraDemo.this, args[0].toString(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-
                 if (args[0].equals("ngn1start") && args[1].equals("up")) {
                     Log.d(TAG, "ng1Start up");
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_2,
+                            ADKManager.ACTION_POWER_ON,
+                            null);
                 }
 
                 if (args[0].equals("ngn1stop") && args[1].equals("up")) {
                     Log.d(TAG, "ng1Stop up");
                     sendCommand(
-                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.COMMAND_MOTOR_2,
                             ADKManager.ACTION_POWER_OFF,
                             null);
+
                 }
 
                 if (args[0].equals("ngn2start") && args[1].equals("up")) {
                     Log.d(TAG, "ng2Start up");
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.ACTION_POWER_ON,
+                            null);
                 }
 
                 if (args[0].equals("ngn2stop") && args[1].equals("up")) {
                     Log.d(TAG, "ng2Stop up");
                     sendCommand(
-                            ADKManager.COMMAND_MOTOR_2,
+                            ADKManager.COMMAND_MOTOR_1,
                             ADKManager.ACTION_POWER_OFF,
                             null);
                 }
 
                 if (args[0].equals("center") && args[1].equals("up")) {
                     Log.d(TAG, "center up");
+                    sendCommand(
+                            ADKManager.COMMAND_ROTATE,
+                            ADKManager.ACTION_RESET_ROTATION,
+                            null);
+
                 }
 
-                if (args[0].equals("connect") && args[1].equals("up")) {
-                    Log.d(TAG, "connect up");
+                if (args[0].equals("power_on") && args[1].equals("up")) {
+                    Log.d(TAG, "power on");
+                    sendCommand(ADKManager.COMMAND_STAND_BY,
+                            ADKManager.ON,
+                            null);
                 }
-				
-				if(args[0].equals("forward") && args[1].equals("up")) {
-					Log.d(TAG, "up: forward");
-					Object[] resp = {"hello", "world"};
-					socket.emit("test", resp);
+
+                if (args[0].equals("power_off") && args[1].equals("up")) {
+                    Log.d(TAG, "power off");
+                    sendCommand(ADKManager.COMMAND_STAND_BY,
+                            ADKManager.OFF,
+                            null);
+                }
+
+                if (args[0].equals("forward") && args[1].equals("up")) {
+                    Log.d(TAG, "up: forward");
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_2,
+                            ADKManager.ACTION_POWER_OFF,
+                            null);
+                }
+                if (args[0].equals("forward") && args[1].equals("down")) {
+                    Log.d(TAG, "down: forward");
                     byte speed = (byte) 255;
                     sendCommand(
-                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.COMMAND_MOTOR_2,
                             ADKManager.ACTION_POWER_ON,
-                            new byte[]{ADKManager.DIRECTION_LEFT, (byte) speed});
-				}
+                            new byte[]{ADKManager.DIRECTION_LEFT, speed});
 
-				if(args[0].equals("forward") && args[1].equals("down")){
-					Log.d(TAG, "down: forward");
-				}
-				if(args[0].equals("left") && args[1].equals("up")){
-					Log.d(TAG, "up: left");
+                }
+                if (args[0].equals("left") && args[1].equals("up")) {
+                    Log.d(TAG, "up: left");
                     sendCommand(
                             ADKManager.COMMAND_ROTATE,
                             ADKManager.ACTION_END_ROTATE,
                             null);
-				}
-				if(args[0].equals("left") && args[1].equals("down")){
-					Log.d(TAG, "down: left");
+                }
+                if (args[0].equals("left") && args[1].equals("down")) {
+                    Log.d(TAG, "down: left");
                     sendCommand(
                             ADKManager.COMMAND_ROTATE,
                             ADKManager.ACTION_START_ROTATE,
                             new byte[]{ADKManager.DIRECTION_LEFT});
-				}
-				if(args[0].equals("right") && args[1].equals("up")){
-					Log.d(TAG, "up: right");
+                }
+                if (args[0].equals("right") && args[1].equals("up")) {
+                    Log.d(TAG, "up: right");
                     sendCommand(
                             ADKManager.COMMAND_ROTATE,
                             ADKManager.ACTION_END_ROTATE,
                             null);
-				}
-				if(args[0].equals("right") && args[1].equals("down")){
-					Log.d(TAG, "down: right");
+                }
+                if (args[0].equals("right") && args[1].equals("down")) {
+                    Log.d(TAG, "down: right");
                     sendCommand(
                             ADKManager.COMMAND_ROTATE,
                             ADKManager.ACTION_START_ROTATE,
                             new byte[]{ADKManager.DIRECTION_RIGHT});
-				}
-				if(args[0].equals("back") && args[1].equals("up")){
-					Log.d(TAG, "up: back");
+                }
+                if (args[0].equals("back") && args[1].equals("up")) {
+                    Log.d(TAG, "up: back");
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_2,
+                            ADKManager.ACTION_POWER_OFF,
+                            null);
+                }
+                if (args[0].equals("back") && args[1].equals("down")) {
+                    Log.d(TAG, "down: back");
+                    byte speed = (byte) 255;
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_2,
+                            ADKManager.ACTION_POWER_ON,
+                            new byte[]{ADKManager.DIRECTION_RIGHT, (byte) speed});
+                }
+
+                if (args[0].equals("elevate_up") && args[1].equals("up")) {
+                    Log.d(TAG, "up: elevate_up");
+                    byte speed = (byte) 255;
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.ACTION_POWER_OFF,
+                            null);
+                }
+                if (args[0].equals("elevate_up") && args[1].equals("down")) {
+                    Log.d(TAG, "down: elevate_up");
+                    byte speed = (byte) 255;
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.ACTION_POWER_ON,
+                            new byte[]{ADKManager.DIRECTION_LEFT, (byte) speed});
+                }
+
+                if (args[0].equals("elevate_down") && args[1].equals("up")) {
+                    Log.d(TAG, "up: elevate_down");
+                    sendCommand(
+                            ADKManager.COMMAND_MOTOR_1,
+                            ADKManager.ACTION_POWER_OFF,
+                            null);
+                }
+                if (args[0].equals("elevate_down") && args[1].equals("down")) {
+                    Log.d(TAG, "down: elevate_down");
                     byte speed = (byte) 255;
                     sendCommand(
                             ADKManager.COMMAND_MOTOR_1,
                             ADKManager.ACTION_POWER_ON,
                             new byte[]{ADKManager.DIRECTION_RIGHT, (byte) speed});
-				}
-				if(args[0].equals("back") && args[1].equals("down")){
-					Log.d(TAG, "down: back");
-				}
-				
-				if(args[0].equals("elevate_up") && args[1].equals("up")){
-					Log.d(TAG, "up: elevate_up");
-                    byte speed = (byte) 255;
-                    sendCommand(
-                            ADKManager.COMMAND_MOTOR_2,
-                            ADKManager.ACTION_POWER_ON,
-                            new byte[]{ADKManager.DIRECTION_LEFT, (byte) speed});
-				}
-				if(args[0].equals("elevate_up") && args[1].equals("down")){
-					Log.d(TAG, "down: elevate_up");
-				}
-				
-				if(args[0].equals("elevate_down") && args[1].equals("up")){
-					Log.d(TAG, "up: elevate_down");
-                    byte speed = (byte) 255;
-                    sendCommand(
-                            ADKManager.COMMAND_MOTOR_2,
-                            ADKManager.ACTION_POWER_ON,
-                            new byte[]{ADKManager.DIRECTION_RIGHT, (byte) speed});
-				}
-				if(args[0].equals("elevate_down") && args[1].equals("down")){
-					Log.d(TAG, "down: elevate_down");
-				}
+                }
 
-                if(args[0].equals("music") && args[1].equals("up")){
+                if (args[0].equals("music") && args[1].equals("up")) {
                     Log.d(TAG, "up: music");
                     // toggle playing
                     if (CameraDemo.this.player.isPlaying()) {
@@ -319,33 +368,31 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                         CameraDemo.this.player.start();
                     }
                 }
-                if(args[0].equals("music") && args[1].equals("down")){
+                if (args[0].equals("music") && args[1].equals("down")) {
                     Log.d(TAG, "down: music");
                 }
-				
-				if(args[0].equals("picture") && args[1].equals("up")){
-					Log.d(TAG, "up: picture");
-					
-					preview.camera.takePicture(shutterCallback, rawCallback, null, jpegCallback);
-					
-					//Object[] resp = {"hello"};
-					//socket.emit("get_img", resp);
-				}
-				
-				if(args[0].equals("picture") && args[1].equals("down")){
-					Log.d(TAG, "down: picture");
-				}
-				
-						
-				
-			}
 
-			@Override
+                if (args[0].equals("picture") && args[1].equals("up")) {
+                    Log.d(TAG, "up: picture");
+
+                    preview.camera.takePicture(shutterCallback, rawCallback, null, jpegCallback);
+
+                    //Object[] resp = {"hello"};
+                    //socket.emit("get_img", resp);
+                }
+
+                if (args[0].equals("picture") && args[1].equals("down")) {
+                    Log.d(TAG, "down: picture");
+                }
+
+            }
+
+                @Override
 			public void onError(SocketIOException socketIOException) {
-				Log.e(TAG, "onError", socketIOException);
-
-			}
-        });
+                    Log.e(TAG, "onError", socketIOException);
+			    }
+        	}
+        );
 			
         try {
             player = new MediaPlayer();
@@ -361,9 +408,9 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
         }
 
         buttonClick = (Button) findViewById(R.id.buttonClick);
-		buttonClick.setOnClickListener( new OnClickListener() {
-			public void onClick(View v) {
-				//preview.camera.takePicture(shutterCallback, rawCallback, jpegCallback);
+        buttonClick.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                //preview.camera.takePicture(shutterCallback, rawCallback, jpegCallback);
                 //AudioManager audioManager = (AudioManager) getSystemService(CameraDemo.AUDIO_SERVICE);
                 //audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 20, 0);
 
@@ -377,10 +424,10 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                 }
 
             }
-		});
+        });
 
-		Log.d(TAG, "onCreate'd");
-	}
+        Log.d(TAG, "onCreate'd");
+    }
 
     /**
      * Send command to the ADK
@@ -420,11 +467,11 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
     }
 
 
-	ShutterCallback shutterCallback = new ShutterCallback() {
-		public void onShutter() {
-			Log.d(TAG, "onShutter'd");
-		}
-	};
+    ShutterCallback shutterCallback = new ShutterCallback() {
+        public void onShutter() {
+            Log.d(TAG, "onShutter'd");
+        }
+    };
 
 	/** Handles data for raw picture */
 	PictureCallback rawCallback = new PictureCallback() {
