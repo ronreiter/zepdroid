@@ -8,14 +8,16 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
-import com.android.future.usb.UsbAccessory;
-import com.android.future.usb.UsbManager;
+import android.hardware.usb.UsbAccessory;
+import android.hardware.usb.UsbManager;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -68,6 +70,9 @@ public class ADKManager implements Runnable {
     private Callback mCallback;
     private Thread mCommunicationThread;
 
+    private boolean mConnecting = false;
+    private Timer mTimer;
+
     ///////////////////////////////////////////////
     // Constructors
     ///////////////////////////////////////////////
@@ -88,7 +93,28 @@ public class ADKManager implements Runnable {
      * Connect to the ADK
      */
     public void connect() {
-        mUsbManager = UsbManager.getInstance(mContext);
+        mConnecting = true;
+
+        mTimer = new Timer();
+        TimerTask reconnectTask = new TimerTask() {
+
+            @Override
+            public void run() {
+                if (mConnecting) {
+                    Log.d(TAG, "Connecting to ADK...");
+                    connectToADK();
+                } else {
+                    mTimer.cancel();
+                }
+            }
+        };
+        mTimer.schedule(reconnectTask, 0, 5000);
+
+    }
+
+    private void connectToADK() {
+        //mUsbManager = UsbManager.getInstance(mContext);
+        mUsbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
         PendingIntent permissionIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(ACTION_USB_PERMISSION), 0);
 
         // register receiver
@@ -119,6 +145,11 @@ public class ADKManager implements Runnable {
      */
     public void disconnect() {
         Log.d(TAG, "Disconnecting from the ADK device");
+        mConnecting = false;
+        if (mTimer != null) {
+            mTimer.cancel();
+        }
+
         mContext.unregisterReceiver(mUsbReceiver);
         closeAccessory();
     }
@@ -276,17 +307,25 @@ public class ADKManager implements Runnable {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            Log.d(TAG, "Got USB intent " + action);
+
             if (ACTION_USB_PERMISSION.equals(action)) {
                 synchronized (this) {
-                    UsbAccessory accessory = UsbManager.getAccessory(intent);
+                    //UsbAccessory accessory = UsbManager.getAccessory(intent);
+                    UsbAccessory accessory = (UsbAccessory) intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         openAccessory(accessory);
                     } else {
                         Log.d(TAG, "USB permission denied");
                     }
                 }
+            } else if (UsbManager.ACTION_USB_ACCESSORY_ATTACHED.equals(action)) {
+                Log.d(TAG, "Attached");
+                mConnecting = false;
             } else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
-                UsbAccessory accessory = UsbManager.getAccessory(intent);
+                //UsbAccessory accessory = UsbManager.getAccessory(intent);
+                UsbAccessory accessory = (UsbAccessory) intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
+
                 if (accessory != null && accessory.equals(mAccessory)) {
                     Log.d(TAG, "Detached");
                     closeAccessory();

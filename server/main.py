@@ -35,8 +35,17 @@ class SessionManager:
 	def get_by_session_id(cls, session_id):
 		return cls.sessions.get(session_id)
 
-class WebHandler(web.RequestHandler):
+
+class KeepAliveHandler(web.RequestHandler):
 	def get(self, *args, **kw):
+		for connection in connections:
+			connection.emit("keep_alive", "keep_alive")
+
+		print "keepAlive"
+		self.render("index.html")
+		
+class WebHandler(web.RequestHandler):
+	def get(self, *args, **kw): 
 		self.render("index.html")
 
 	def post(self):
@@ -79,6 +88,8 @@ class WebApp(object):
 		routes = [
 			(r"/static/(.*)", web.StaticFileHandler, {"path": "./static"}),
 			(r"/", WebHandler),
+			(r"/keepalive", KeepAliveHandler),
+
 		]
 
 		routes.extend(app_router.urls)
