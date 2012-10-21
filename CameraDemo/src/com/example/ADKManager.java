@@ -10,6 +10,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbManager;
+import android.widget.Toast;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -102,8 +103,12 @@ public class ADKManager implements Runnable {
 
             @Override
             public void run() {
+                if (mConnected) {
+                    return;
+                }
+
                 if (mConnecting) {
-                    Log.d(TAG, "Connecting to ADK...");
+                    mCallback.onLog("Connecting to ADK...");
                     connectToADK();
                 } else {
                     mTimer.cancel();
@@ -121,6 +126,7 @@ public class ADKManager implements Runnable {
 
         // register receiver
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        filter.addAction(UsbManager.ACTION_USB_ACCESSORY_ATTACHED);
         filter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
         mContext.registerReceiver(mUsbReceiver, filter);
 
@@ -130,8 +136,11 @@ public class ADKManager implements Runnable {
 
         if (accessory != null) {
             if (mUsbManager.hasPermission(accessory)) {
+                mCallback.onLog("Already have permission to connect. Opening accessory.");
                 openAccessory(accessory);
             } else {
+                mCallback.onLog("Requesting permission from user to connect.");
+
                 synchronized (mUsbReceiver) {
                     if (!mPermissionRequestPending) {
                         mUsbManager.requestPermission(accessory, permissionIntent);
@@ -146,7 +155,7 @@ public class ADKManager implements Runnable {
      * Disconnect from the ADK
      */
     public void disconnect() {
-        Log.d(TAG, "Disconnecting from the ADK device");
+        mCallback.onLog("Disconnecting from the ADK device");
         mConnecting = false;
         mConnected = false;
 
@@ -154,7 +163,12 @@ public class ADKManager implements Runnable {
             mTimer.cancel();
         }
 
-        mContext.unregisterReceiver(mUsbReceiver);
+        try {
+            mContext.unregisterReceiver(mUsbReceiver);
+
+        } catch (Exception e) {
+           mCallback.onLog("Unregister called twice");
+        }
         closeAccessory();
     }
 
@@ -180,14 +194,14 @@ public class ADKManager implements Runnable {
 
                 if (mOutputStream != null) {
                     try {
-                        Log.d(TAG, "sendCommand: Sending data to Arduino device: " + buffer);
+                        mCallback.onLog("sendCommand: Sending data to Arduino device: " + buffer);
                         mOutputStream.write(buffer.array());
                     } catch (IOException e) {
-                        Log.d(TAG, "sendCommand: Send failed: " + e.getMessage());
+                        mCallback.onLog("sendCommand: Send failed: " + e.getMessage());
                         reconnect();
                     }
                 } else {
-                    Log.d(TAG, "sendCommand: Send failed: mOutStream was null");
+                    mCallback.onLog("sendCommand: Send failed: mOutStream was null");
                     reconnect();
                 }
             }
@@ -244,7 +258,7 @@ public class ADKManager implements Runnable {
      * @param accessory
      */
     private void openAccessory(UsbAccessory accessory) {
-        Log.d(TAG, "Trying to attach ADK device");
+        mCallback.onLog("Trying to attach ADK device");
         mFileDescriptor = mUsbManager.openAccessory(accessory);
         if (mFileDescriptor != null) {
             mAccessory = accessory;
@@ -259,9 +273,15 @@ public class ADKManager implements Runnable {
 
             mCommunicationThread = new Thread(null, this, TAG);
             mCommunicationThread.start();
-            Log.d(TAG, "Attached");
+
+            mCallback.onLog("Attached");
+
+            mConnected = true;
+            mConnecting = false;
+            mTimer.cancel();
+
         } else {
-            Log.d(TAG, "openAccessory: accessory open failed");
+            mCallback.onLog("openAccessory: accessory open failed");
         }
     }
 
@@ -269,7 +289,7 @@ public class ADKManager implements Runnable {
      * Closing the read and write to and from the Arduino
      */
     private void closeAccessory() {
-        Log.d(TAG, "Trying to de-attach ADK device");
+        mCallback.onLog("Trying to de-attach ADK device");
         try {
             if (mFileDescriptor != null) {
                 mFileDescriptor.close();
@@ -283,7 +303,7 @@ public class ADKManager implements Runnable {
                 mOutputStream.close();
             }
         } catch (Exception e) {
-            Log.d(TAG, "Couldn't close all streams properly");
+            mCallback.onLog("Couldn't close all streams properly");
         } finally {
             mFileDescriptor = null;
             mAccessory = null;
@@ -305,13 +325,15 @@ public class ADKManager implements Runnable {
 
     public interface Callback {
         void onADKAckReceived(boolean ack);
+
+        void onLog(String s);
     }
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Log.d(TAG, "Got USB intent " + action);
+            mCallback.onLog("Got USB intent " + action);
 
             if (ACTION_USB_PERMISSION.equals(action)) {
                 synchronized (this) {
@@ -320,32 +342,32 @@ public class ADKManager implements Runnable {
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         openAccessory(accessory);
                     } else {
-                        Log.d(TAG, "USB permission denied");
+                        mCallback.onLog("USB permission denied");
                     }
                 }
             } else if (UsbManager.ACTION_USB_ACCESSORY_ATTACHED.equals(action)) {
                 UsbAccessory accessory = (UsbAccessory) intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
 
-                if (accessory != null && accessory.equals(mAccessory)) {
-                    Log.d(TAG, "Attached");
+                //if (accessory != null && accessory.equals(mAccessory)) {
+                    mCallback.onLog("Got ACTION_USB_ACCESSORY_ATTACHED message");
                     mConnecting = false;
                     mConnected = true;
-                }
+                //}
 
             } else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
                 UsbAccessory accessory = (UsbAccessory) intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
 
-                if (accessory != null && accessory.equals(mAccessory)) {
-                    Log.d(TAG, "Detached");
+                //if (accessory != null && accessory.equals(mAccessory)) {
+                    mCallback.onLog("Got ACTION_USB_ACCESSORY_DETACHED message");
                     closeAccessory();
 
                     // reconnect if needed
                     if (mConnected) {
-                        Log.d(TAG, "Reconnecting...");
+                        mCallback.onLog("Reconnecting...");
                         mConnected = false;
                         connect();
                     }
-                }
+                //}
             }
         }
     };

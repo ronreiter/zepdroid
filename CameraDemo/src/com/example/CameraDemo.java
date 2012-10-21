@@ -24,13 +24,13 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.*;
 import java.util.Timer;
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
@@ -48,6 +48,8 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 	Button buttonClick;
     SocketIO socket = null;
     MediaPlayer player = null;
+    byte mLastCommand;
+    byte mLastAction;
 
     int period = 10 * 1000;  // repeat every sec.
     Timer timer = new Timer();
@@ -201,13 +203,22 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 				
 			}
 
-			@Override
-			public void on(String event, IOAcknowledge ack, Object... args) {
+
+            @Override
+			public void on(String event, IOAcknowledge ack, final Object... args) {
                 Log.d(TAG, "on " + args[0]);
+
                 if (args[0].equals("keep_alive")) {
                     Log.d(TAG, "got back keep alive from socket");
                     return;
                 }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(CameraDemo.this, args[0].toString(), Toast.LENGTH_SHORT).show();
+                    }
+                });
 
                 if (args[0].equals("ngn1start") && args[1].equals("up")) {
                     Log.d(TAG, "ng1Start up");
@@ -441,11 +452,51 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
         // mProgress.setVisibility(View.VISIBLE);
         // enableButtons(false);
         mADKManager.sendCommand(command, action, data);
+        mLastCommand = command;
+        mLastAction = action;
+
     }
 
     @Override
     public void onADKAckReceived(boolean ack) {
         Log.d(TAG, "onADKAckReceived: " + ack);
+        socket.emit("ack", mLastCommand, mLastAction);
+    }
+
+    @Override
+    public void onLog(final String s) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(CameraDemo.this, s, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        //socket.emit("log", s);
+
+        /*
+        try {
+            URL url = new URL(BASE_URI + "/log?s=" + s);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.getInputStream();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        */
+
+        HttpClient client = new DefaultHttpClient();
+        HttpGet request = new HttpGet();
+        try {
+            request.setURI(new URI(BASE_URI + "/log?s=" + URLEncoder.encode(s)));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        try {
+            client.execute(request);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
