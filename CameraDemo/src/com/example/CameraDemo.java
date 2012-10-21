@@ -130,6 +130,9 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 
         mADKManager = new ADKManager(this, this);
 		preview = new Preview(this);
+
+        mADKManager.connect();
+
 		((FrameLayout) findViewById(R.id.preview)).addView(preview);
 		
 		//Timer getPic = new Timer();
@@ -465,12 +468,14 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 
     @Override
     public void onLog(final String s) {
+        /*
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 Toast.makeText(CameraDemo.this, s, Toast.LENGTH_SHORT).show();
             }
         });
+        */
 
         //socket.emit("log", s);
 
@@ -500,20 +505,9 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        mADKManager.disconnect();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        mADKManager.connect();
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
+        mADKManager.disconnect();
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 

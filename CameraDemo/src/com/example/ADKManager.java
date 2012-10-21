@@ -95,6 +95,20 @@ public class ADKManager implements Runnable {
      * Connect to the ADK
      */
     public void connect() {
+        if (mConnected) {
+            return;
+        }
+
+        //mUsbManager = UsbManager.getInstance(mContext);
+        mUsbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
+
+        // register receiver
+        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        filter.addAction(UsbManager.ACTION_USB_ACCESSORY_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
+        mContext.registerReceiver(mUsbReceiver, filter);
+
+
         mConnected = false;
         mConnecting = true;
 
@@ -115,21 +129,11 @@ public class ADKManager implements Runnable {
                 }
             }
         };
-        mTimer.schedule(reconnectTask, 0, 5000);
+        mTimer.schedule(reconnectTask, 0, 10000);
 
     }
 
     private void connectToADK() {
-        //mUsbManager = UsbManager.getInstance(mContext);
-        mUsbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
-        PendingIntent permissionIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(ACTION_USB_PERMISSION), 0);
-
-        // register receiver
-        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-        filter.addAction(UsbManager.ACTION_USB_ACCESSORY_ATTACHED);
-        filter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
-        mContext.registerReceiver(mUsbReceiver, filter);
-
         // Looking for more than 1 connected accessory, if found will return the one defined in the constant
         UsbAccessory[] accessories = mUsbManager.getAccessoryList();
         UsbAccessory accessory = (accessories == null ? null : accessories[ACCESSORY_TO_RETURN]);
@@ -140,9 +144,10 @@ public class ADKManager implements Runnable {
                 openAccessory(accessory);
             } else {
                 mCallback.onLog("Requesting permission from user to connect.");
-
+                mTimer.cancel();
                 synchronized (mUsbReceiver) {
                     if (!mPermissionRequestPending) {
+                        PendingIntent permissionIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(ACTION_USB_PERMISSION), 0);
                         mUsbManager.requestPermission(accessory, permissionIntent);
                         mPermissionRequestPending = true;
                     }
@@ -344,6 +349,7 @@ public class ADKManager implements Runnable {
                     } else {
                         mCallback.onLog("USB permission denied");
                     }
+                    mPermissionRequestPending = false;
                 }
             } else if (UsbManager.ACTION_USB_ACCESSORY_ATTACHED.equals(action)) {
                 UsbAccessory accessory = (UsbAccessory) intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
