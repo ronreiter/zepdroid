@@ -66,6 +66,7 @@ public class ADKManager implements Runnable {
     private Context mContext;
     private Handler mHandler;
     private Callback mCallback;
+    private Thread mCommunicationThread;
 
     ///////////////////////////////////////////////
     // Constructors
@@ -117,7 +118,9 @@ public class ADKManager implements Runnable {
      * Disconnect from the ADK
      */
     public void disconnect() {
+        Log.d(TAG, "Disconnecting from the ADK device");
         mContext.unregisterReceiver(mUsbReceiver);
+        closeAccessory();
     }
 
     /**
@@ -125,7 +128,7 @@ public class ADKManager implements Runnable {
      *
      * @param command
      * @param action
-     * @param data May also be null if there's no data (if you read this, you rock!)
+     * @param data    May also be null if there's no data (if you read this, you rock!)
      */
     public void sendCommand(final byte command, final byte action, final byte[] data) {
         mPool.execute(new Runnable() {
@@ -146,12 +149,20 @@ public class ADKManager implements Runnable {
                         mOutputStream.write(buffer.array());
                     } catch (IOException e) {
                         Log.d(TAG, "sendCommand: Send failed: " + e.getMessage());
+                        reconnect();
                     }
                 } else {
                     Log.d(TAG, "sendCommand: Send failed: mOutStream was null");
+                    reconnect();
                 }
             }
         });
+    }
+
+    private void reconnect() {
+        Log.i(TAG, "attempting to reconnect to ADK device");
+        disconnect();
+        connect();
     }
 
     ///////////////////////////////////////////////
@@ -159,12 +170,11 @@ public class ADKManager implements Runnable {
     ///////////////////////////////////////////////
 
     /**
-     * The running thread.
-     * It takes care of the communication between the Android and the Arduino
+     * The running thread. It takes care of the communication between the Android and the Arduino
      */
     @Override
     public void run() {
-        int ret = 0;
+        int ret;
         byte[] buffer = new byte[16384];
 
         // Keeps reading messages forever.
@@ -172,19 +182,20 @@ public class ADKManager implements Runnable {
         while (true) {
             try {
                 ret = mInputStream.read(buffer);
-            } catch (IOException e) {
+                if (ret > 0) {
+                    final boolean ack = buffer[0] == 1;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mCallback.onADKAckReceived(ack);
+                        }
+                    });
+                }
+            }
+            catch (Exception e) {
                 break;
             }
 
-            if (ret > 0) {
-                final boolean ack = buffer[0] == 1;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mCallback.onADKAckReceived(ack);
-                    }
-                });
-            }
         }
     }
 
@@ -198,14 +209,21 @@ public class ADKManager implements Runnable {
      * @param accessory
      */
     private void openAccessory(UsbAccessory accessory) {
+        Log.d(TAG, "Trying to attach ADK device");
         mFileDescriptor = mUsbManager.openAccessory(accessory);
         if (mFileDescriptor != null) {
             mAccessory = accessory;
             FileDescriptor fd = mFileDescriptor.getFileDescriptor();
             mInputStream = new FileInputStream(fd);
             mOutputStream = new FileOutputStream(fd);
-            Thread thread = new Thread(null, this, TAG);
-            thread.start();
+
+            if (mCommunicationThread != null) {
+                // TODO need to stop the thread in a better/safer way
+                mCommunicationThread.interrupt();
+            }
+
+            mCommunicationThread = new Thread(null, this, TAG);
+            mCommunicationThread.start();
             Log.d(TAG, "Attached");
         } else {
             Log.d(TAG, "openAccessory: accessory open failed");
@@ -216,11 +234,21 @@ public class ADKManager implements Runnable {
      * Closing the read and write to and from the Arduino
      */
     private void closeAccessory() {
+        Log.d(TAG, "Trying to de-attach ADK device");
         try {
             if (mFileDescriptor != null) {
                 mFileDescriptor.close();
             }
-        } catch (IOException e) {
+
+            if (mInputStream != null) {
+                mInputStream.close();
+            }
+
+            if (mOutputStream != null) {
+                mOutputStream.close();
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Couldn't close all streams properly");
         } finally {
             mFileDescriptor = null;
             mAccessory = null;
