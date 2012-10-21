@@ -40,7 +40,6 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
     //private static final String BASE_URI = "http://192.168.2.101:8099";
 
     ADKManager mADKManager;
-	Camera camera;
 	Preview preview;
 	Button buttonClick;
 	SocketIO socket = null;
@@ -440,7 +439,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 			FileOutputStream outStream = null;
 			//try {
 				// write to local sandbox file system
-//				outStream = CameraDemo.this.openFileOutput(String.format("%d.jpg", System.currentTimeMillis()), 0);	
+//				outStream = CameraDemo.this.openFileOutput(String.format("%d.jpg", System.currentTimeMillis()), 0);
 				// Or write to sdcard
 				//outStream = new FileOutputStream(String.format("/sdcard/%d.jpg", System.currentTimeMillis()));	
 				//outStream.write(data);
