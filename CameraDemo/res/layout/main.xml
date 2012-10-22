@@ -7,7 +7,7 @@
 		android:textSize="24sp" />
 
 	<FrameLayout android:id="@+id/preview"
-		android:layout_weight="1" android:layout_width="fill_parent"
+		android:layout_weight="1" android:layout_width="fill_parent" android:visibility="invisible"
 		android:layout_height="fill_parent">
 	</FrameLayout>
 
