@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="72bd279d-3e59-40c6-bbe4-6a48ed7c6246" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../CameraDemo/src/com/example/CameraDemo.java" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../CameraDemo/AndroidManifest.xml" afterPath="$PROJECT_DIR$/../CameraDemo/AndroidManifest.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../CameraDemo/res/layout/main.xml" afterPath="$PROJECT_DIR$/../CameraDemo/res/layout/main.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../CameraDemo/src/com/example/ADKManager.java" afterPath="$PROJECT_DIR$/../CameraDemo/src/com/example/ADKManager.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../CameraDemo/src/com/example/ZepDroidService.java" afterPath="$PROJECT_DIR$/../CameraDemo/src/com/example/ZepDroidService.java" />
     </list>
     <ignored path="ZepDroid.iws" />
     <ignored path=".idea/workspace.xml" />
