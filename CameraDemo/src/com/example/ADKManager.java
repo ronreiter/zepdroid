@@ -35,6 +35,8 @@ public class ADKManager implements Runnable {
     private static final int ACCESSORY_TO_RETURN = 0;
     private static final String ACTION_USB_PERMISSION = "com.google.android.DemoKit.action.USB_PERMISSION";
 
+    private static final int RECONNECT_TIMER_PERIOD_MILLIS = 5000;
+
     public static final byte ON = 0;
     public static final byte OFF = 1;
 
@@ -129,7 +131,7 @@ public class ADKManager implements Runnable {
                 }
             }
         };
-        mTimer.schedule(reconnectTask, 0, 10000);
+        mTimer.schedule(reconnectTask, 0, RECONNECT_TIMER_PERIOD_MILLIS);
 
     }
 

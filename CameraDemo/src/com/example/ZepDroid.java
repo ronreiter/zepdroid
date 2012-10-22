@@ -24,7 +24,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONObject;
@@ -38,10 +37,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.TimerTask;
 
-public class CameraDemo extends Activity implements ADKManager.Callback {
+public class ZepDroid extends Activity implements ADKManager.Callback {
 	private static final String TAG = "ZepDroid";
     private static final String BASE_URI = "http://zepdroid.com:8099";
     //private static final String BASE_URI = "http://192.168.2.101:8099";
+    private static final boolean TOAST_DEBUG = false;
+
 
     ADKManager mADKManager;
 	Preview preview;
@@ -219,7 +220,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(CameraDemo.this, args[0].toString(), Toast.LENGTH_SHORT).show();
+                        if (TOAST_DEBUG) Toast.makeText(ZepDroid.this, args[0].toString(), Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -375,11 +376,11 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
                 if (args[0].equals("music") && args[1].equals("up")) {
                     Log.d(TAG, "up: music");
                     // toggle playing
-                    if (CameraDemo.this.player.isPlaying()) {
-                        CameraDemo.this.player.stop();
+                    if (ZepDroid.this.player.isPlaying()) {
+                        ZepDroid.this.player.stop();
 
                     } else {
-                        CameraDemo.this.player.start();
+                        ZepDroid.this.player.start();
                     }
                 }
                 if (args[0].equals("music") && args[1].equals("down")) {
@@ -410,7 +411,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 			
         try {
             player = new MediaPlayer();
-            AssetFileDescriptor afd = CameraDemo.this.getResources().openRawResourceFd(R.raw.wholelottalove);
+            AssetFileDescriptor afd = ZepDroid.this.getResources().openRawResourceFd(R.raw.wholelottalove);
             player.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
             afd.close();
             player.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -425,15 +426,15 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
         buttonClick.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 //preview.camera.takePicture(shutterCallback, rawCallback, jpegCallback);
-                //AudioManager audioManager = (AudioManager) getSystemService(CameraDemo.AUDIO_SERVICE);
+                //AudioManager audioManager = (AudioManager) getSystemService(ZepDroid.AUDIO_SERVICE);
                 //audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 20, 0);
 
                 // toggle playing
-                if (CameraDemo.this.player.isPlaying()) {
-                    CameraDemo.this.player.stop();
+                if (ZepDroid.this.player.isPlaying()) {
+                    ZepDroid.this.player.stop();
 
                 } else {
-                    CameraDemo.this.player.start();
+                    ZepDroid.this.player.start();
 
                 }
 
@@ -472,7 +473,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(CameraDemo.this, s, Toast.LENGTH_SHORT).show();
+                Toast.makeText(ZepDroid.this, s, Toast.LENGTH_SHORT).show();
             }
         });
         */
@@ -531,7 +532,7 @@ public class CameraDemo extends Activity implements ADKManager.Callback {
 			FileOutputStream outStream = null;
 			//try {
 				// write to local sandbox file system
-//				outStream = CameraDemo.this.openFileOutput(String.format("%d.jpg", System.currentTimeMillis()), 0);
+//				outStream = ZepDroid.this.openFileOutput(String.format("%d.jpg", System.currentTimeMillis()), 0);
 				// Or write to sdcard
 				//outStream = new FileOutputStream(String.format("/sdcard/%d.jpg", System.currentTimeMillis()));	
 				//outStream.write(data);
