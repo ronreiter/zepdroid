@@ -8,8 +8,8 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
-import com.android.future.usb.UsbAccessory;
-import com.android.future.usb.UsbManager;
+import android.hardware.usb.UsbAccessory;
+import android.hardware.usb.UsbManager;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -88,7 +88,7 @@ public class ADKManager implements Runnable {
      * Connect to the ADK
      */
     public void connect() {
-        mUsbManager = UsbManager.getInstance(mContext);
+        mUsbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
         PendingIntent permissionIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(ACTION_USB_PERMISSION), 0);
 
         // register receiver
@@ -278,7 +278,7 @@ public class ADKManager implements Runnable {
             String action = intent.getAction();
             if (ACTION_USB_PERMISSION.equals(action)) {
                 synchronized (this) {
-                    UsbAccessory accessory = UsbManager.getAccessory(intent);
+                    UsbAccessory accessory = (UsbAccessory) intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         openAccessory(accessory);
                     } else {
@@ -286,7 +286,7 @@ public class ADKManager implements Runnable {
                     }
                 }
             } else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
-                UsbAccessory accessory = UsbManager.getAccessory(intent);
+                UsbAccessory accessory = (UsbAccessory) intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
                 if (accessory != null && accessory.equals(mAccessory)) {
                     Log.d(TAG, "Detached");
                     closeAccessory();

@@ -28,3 +28,4 @@ pip-log.txt
 out
 server/.idea
 CameraDemo/.idea
+*/.idea

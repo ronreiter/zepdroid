@@ -150,9 +150,13 @@ public class ADKManager implements Runnable {
                         PendingIntent permissionIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(ACTION_USB_PERMISSION), 0);
                         mUsbManager.requestPermission(accessory, permissionIntent);
                         mPermissionRequestPending = true;
+                    } else {
+                        mCallback.onLog("Not requesting for USB permissions since a request is already pending");
                     }
                 }
             }
+        } else {
+            mCallback.onLog("Trying to connect to ADK but no accessory was found");
         }
     }
 
@@ -170,7 +174,6 @@ public class ADKManager implements Runnable {
 
         try {
             mContext.unregisterReceiver(mUsbReceiver);
-
         } catch (Exception e) {
            mCallback.onLog("Unregister called twice");
         }
@@ -361,18 +364,18 @@ public class ADKManager implements Runnable {
                 //}
 
             } else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
-                UsbAccessory accessory = (UsbAccessory) intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
+                //UsbAccessory accessory = (UsbAccessory) intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
 
                 //if (accessory != null && accessory.equals(mAccessory)) {
                     mCallback.onLog("Got ACTION_USB_ACCESSORY_DETACHED message");
-                    closeAccessory();
-
+                    //closeAccessory();
+                    reconnect();
                     // reconnect if needed
-                    if (mConnected) {
-                        mCallback.onLog("Reconnecting...");
-                        mConnected = false;
-                        connect();
-                    }
+                    //if (mConnected) {
+                    //    mCallback.onLog("Reconnecting...");
+                    //    mConnected = false;
+                    //    connect();
+                    //}
                 //}
             }
         }
