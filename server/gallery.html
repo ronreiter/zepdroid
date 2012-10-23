@@ -30,7 +30,7 @@
                     $images.empty();
                     $images.height($(window).height());
                     for (var i = 1; i <= maxImage; i++) {
-                        var imgElement = $("<img>").attr("src", "/static/image" + i + ".jpeg");
+                        var imgElement = $("<img>").attr("src", "/static/image" + i + ".jpg");
 
                         $images.append($("<div>").addClass("image-container").append(imgElement).css({
                             "left" : ((i-1) * 100) + "%",
