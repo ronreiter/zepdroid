@@ -2,6 +2,6 @@
 
 <resources>
     <usb-accessory model="ZepDroid"
-                   manufacturer="Geeckon"
+                   manufacturer="Geekcon"
                    version="1.0"/>
 </resources>

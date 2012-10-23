@@ -15,14 +15,14 @@ import android.view.*;
 
 
 class Preview extends SurfaceView implements SurfaceHolder.Callback {
-	private static final String TAG = "Preview";
+	private static final String TAG = "ZepDroid";
 
     SurfaceHolder mHolder;
     public Camera camera;
 
     Preview(Context context) {
         super(context);
-        
+
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
         mHolder = getHolder();
