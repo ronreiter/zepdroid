@@ -72,6 +72,12 @@
 				$('#picture span').show();
 				console.log("got image");
 			});
+
+			socket.on('got_log', function(data) {
+				console.log("got log: " + data);
+				$("#log").append(data);
+				$("#log").append("\n");
+			});
 			
 			socket.on('keep_alive', function (data) {
 				console.log('keep alive: ' + data);
@@ -114,5 +120,7 @@
 		<img id="camera" />
 	</div>
 	<div id="keepAlive">Last connection: <span></span></div>
+	<div id="log" style="white-space: pre-wrap; word-wrap: break-word; font-family: monospace; width: 480px; margin: 20px auto; height: 500px; overflow-y: scroll">
+	</div>
 </body>
 </html>

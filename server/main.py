@@ -44,6 +44,13 @@ class KeepAliveHandler(web.RequestHandler):
 		print "keepAlive"
 		self.render("index.html")
 		
+class LogHandler(web.RequestHandler):
+	def get(self, *args, **kw):
+		for connection in connections:
+			connection.emit("got_log", self.get_argument("s"))
+
+		print "log: %s" % self.get_argument("s")
+		
 class WebHandler(web.RequestHandler):
 	def get(self, *args, **kw): 
 		self.render("index.html")
@@ -81,6 +88,11 @@ class EventHandler(tornadio2.SocketConnection):
 		print "up: %s" % event
 		self.emit_all(event, "up")
 
+	@tornadio2.event
+	def log(self, s):
+		print "log: %s" % s
+		self.emit_all("got_log", s)
+
 class WebApp(object):
 	def __init__(self):
 		app_router = tornadio2.TornadioRouter(EventHandler)
@@ -89,6 +101,7 @@ class WebApp(object):
 			(r"/static/(.*)", web.StaticFileHandler, {"path": "./static"}),
 			(r"/", WebHandler),
 			(r"/keepalive", KeepAliveHandler),
+			(r"/log", LogHandler),
 
 		]
 
