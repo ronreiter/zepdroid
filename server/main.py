@@ -5,13 +5,21 @@ import tornadio2
 
 import hashlib
 import random
+import json
+import shelve
 
 APP_PORT = 8099
 SESSION_COOKIE_NAME = "session"
 
 connections = []
 
-image_id = 1
+db = shelve.open("data")
+
+if "last-image" not in db:
+	db["last-image"] = 1
+
+image_id = db["last-image"]
+
 
 def create_random_str():
 	return hashlib.sha256(str(random.getrandbits(1000))).hexdigest()
@@ -63,7 +71,17 @@ class WebHandler(web.RequestHandler):
 			print "disp_img %s" % connection
 			connection.emit("disp_img", "static/image%d.jpg" % image_id)
 		image_id += 1
-		
+
+class GalleryHandler(web.RequestHandler):
+	def get(self, *args, **kw):
+		self.render("gallery.html")
+
+class LastImageHandler(web.RequestHandler):
+	def get(self, *args, **kw):
+		self.write(json.dumps({
+			"last-image" : image_id - 1
+		}))
+
 class EventHandler(tornadio2.SocketConnection):
 	def on_open(self, request):
 		print "client connected."
@@ -102,6 +120,8 @@ class WebApp(object):
 			(r"/", WebHandler),
 			(r"/keepalive", KeepAliveHandler),
 			(r"/log", LogHandler),
+			(r"/gallery", GalleryHandler),
+			(r"/last-image", LastImageHandler),
 
 		]
 

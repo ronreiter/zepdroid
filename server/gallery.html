@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZepDroid - Gallery</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <script src="static/socket.io.js"></script>
+    <script src="static/jquery-1.8.1.min.js"></script>
+    <script src="static/hammer.js"></script>
+    <script src="static/jquery.hammer.js"></script>
+    <link rel="stylesheet" href="static/entypo/entypo.css"/>
+    <script>
+        var currentImage = 0;
+        var maxImage = 0;
+        var $images;
+        var interval;
+
+        function showCurrentImage() {
+            $("#images").css("left", "-" + ((currentImage-1) * 100) + "%");
+        }
+
+        function intervalFunction() {
+            console.log("current", currentImage, "max", maxImage);
+            if (currentImage == maxImage) {
+                console.log("fetching images...");
+                $.getJSON("/last-image", function(data) {
+                    maxImage = data["last-image"];
+                    maxImage = 6;
+                    currentImage = 1;
+
+                    $images.empty();
+                    $images.height($(window).height());
+                    for (var i = 1; i <= maxImage; i++) {
+                        var imgElement = $("<img>").attr("src", "/static/image" + i + ".jpeg");
+
+                        $images.append($("<div>").addClass("image-container").append(imgElement).css({
+                            "left" : ((i-1) * 100) + "%",
+                        }));
+                    }
+
+                    showCurrentImage();
+
+                });
+            } else {
+                currentImage += 1;
+                showCurrentImage()
+            }
+        }
+
+        $(function() {
+            $images = $("#images");
+
+            $(window).resize(function() {
+                $images.height($(window).height());
+            });
+            
+            $(window).mousemove(function(e) {
+                if (e.pageY > $(window).height() - 120) {
+                    $("#gallery-controls").fadeIn("fast");
+                } else {
+                    $("#gallery-controls").fadeOut("fast");
+                }
+            });
+
+            $("#left").click(function() {
+                clearInterval(interval);
+                interval = setInterval(intervalFunction, 5000);
+                currentImage -= 1;
+                if (currentImage < 0) {
+                    currentImage = maxImage;
+                }
+                showCurrentImage();
+            });
+
+            $("#right").click(function() {
+                clearInterval(interval);
+                interval = setInterval(intervalFunction, 5000);
+                currentImage += 1;
+                if (currentImage > maxImage) {
+                    currentImage = 1;
+                }
+                showCurrentImage();
+            });
+
+            interval = setInterval(intervalFunction, 5000);
+            intervalFunction();
+
+        });
+    </script>
+    <link href="static/style.css" rel="stylesheet" />
+    <style>
+        body {
+            background: black;
+            overflow: hidden;
+        }
+
+        #images {
+            position: relative;
+            text-wrap: avoid;
+            white-space: pre;
+            word-break: keep-all;
+            word-wrap: break-word;
+            -webkit-transition: 0.5s left ease-out;
+            -moz-transition: 0.5s left ease-out;
+            -ms-transition: 0.5s left ease-out;
+            -o-transition: 0.5s left ease-out;
+            transition: 0.5s left ease-out;
+        }
+
+        #gallery-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+        }
+        #left {
+            float: left;
+        }
+        #right {
+            float: right;
+        }
+
+        #images .image-container {
+            display: block;
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            text-align: center;
+        }
+
+        #images img {
+            display: inline-block;
+            height: 100%;
+            vertical-align: middle;
+
+        }
+    </style>
+</head>
+<body>
+<!--header>
+	<div class="container">
+		<h1 class="title"><img src="static/zepdroid.png" class="icon"/></h1>
+
+	<!--/div>
+</header-->
+
+<div id="images">
+
+</div>
+
+<div id="gallery-controls" style="display: none;">
+    <div id="left" class="button float-button">ç</div>
+    <div id="right" class="button float-button">ê</div>
+</div>
+</body>
+</html>
