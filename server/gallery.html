@@ -25,7 +25,6 @@
                 console.log("fetching images...");
                 $.getJSON("/last-image", function(data) {
                     maxImage = data["last-image"];
-                    maxImage = 6;
                     currentImage = 1;
 
                     $images.empty();
@@ -53,7 +52,7 @@
             $(window).resize(function() {
                 $images.height($(window).height());
             });
-            
+
             $(window).mousemove(function(e) {
                 if (e.pageY > $(window).height() - 120) {
                     $("#gallery-controls").fadeIn("fast");
